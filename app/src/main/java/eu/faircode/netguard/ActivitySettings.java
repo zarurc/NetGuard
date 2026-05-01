@@ -46,10 +46,9 @@ import android.preference.PreferenceFragment;
 import android.preference.PreferenceGroup;
 import android.preference.PreferenceScreen;
 import android.preference.TwoStatePreference;
-import android.text.SpannableStringBuilder;
-import android.text.Spanned;
+
 import android.text.TextUtils;
-import android.text.style.ImageSpan;
+
 import android.util.Log;
 import android.util.Xml;
 import android.view.LayoutInflater;
@@ -370,8 +369,6 @@ public class ActivitySettings extends AppCompatActivity implements SharedPrefere
 
                     EditTextPreference pref_hosts_url = (EditTextPreference) screen.findPreference("hosts_url");
                     String hosts_url = pref_hosts_url.getText();
-                    if ("https://www.netguard.me/hosts".equals(hosts_url))
-                        hosts_url = BuildConfig.HOSTS_FILE_URI;
 
                     try {
                         new DownloadTask(ActivitySettings.this, new URL(hosts_url), tmp, new DownloadTask.Listener() {
@@ -437,9 +434,9 @@ public class ActivitySettings extends AppCompatActivity implements SharedPrefere
         pref_technical_network.setOnPreferenceClickListener(listener);
         updateTechnicalInfo();
 
-        markPro(screen.findPreference("theme"), ActivityPro.SKU_THEME);
-        markPro(screen.findPreference("install"), ActivityPro.SKU_NOTIFY);
-        markPro(screen.findPreference("show_stats"), ActivityPro.SKU_SPEED);
+        markPro(screen.findPreference("theme"), null);
+        markPro(screen.findPreference("install"), null);
+        markPro(screen.findPreference("show_stats"), null);
     }
 
     @Override
@@ -500,27 +497,7 @@ public class ActivitySettings extends AppCompatActivity implements SharedPrefere
     @Override
     @TargetApi(Build.VERSION_CODES.M)
     public void onSharedPreferenceChanged(SharedPreferences prefs, String name) {
-        // Pro features
-        if ("theme".equals(name)) {
-            if (!"teal".equals(prefs.getString(name, "teal")) && !IAB.isPurchased(ActivityPro.SKU_THEME, this)) {
-                prefs.edit().putString(name, "teal").apply();
-                ((ListPreference) getPreferenceScreen().findPreference(name)).setValue("teal");
-                startActivity(new Intent(this, ActivityPro.class));
-                return;
-            }
-        } else if ("install".equals(name)) {
-            if (prefs.getBoolean(name, false) && !IAB.isPurchased(ActivityPro.SKU_NOTIFY, this)) {
-                prefs.edit().putBoolean(name, false).apply();
-                ((TwoStatePreference) getPreferenceScreen().findPreference(name)).setChecked(false);
-                startActivity(new Intent(this, ActivityPro.class));
-                return;
-            }
-        } else if ("show_stats".equals(name)) {
-            if (prefs.getBoolean(name, false) && !IAB.isPurchased(ActivityPro.SKU_SPEED, this)) {
-                prefs.edit().putBoolean(name, false).apply();
-                startActivity(new Intent(this, ActivityPro.class));
-                return;
-            }
+        if ("show_stats".equals(name)) {
             ((TwoStatePreference) getPreferenceScreen().findPreference(name)).setChecked(prefs.getBoolean(name, false));
         }
 
@@ -858,13 +835,7 @@ public class ActivitySettings extends AppCompatActivity implements SharedPrefere
     };
 
     private void markPro(Preference pref, String sku) {
-        if (sku == null || !IAB.isPurchased(sku, this)) {
-            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-            boolean dark = prefs.getBoolean("dark_theme", false);
-            SpannableStringBuilder ssb = new SpannableStringBuilder("  " + pref.getTitle());
-            ssb.setSpan(new ImageSpan(this, dark ? R.drawable.ic_shopping_cart_white_24dp : R.drawable.ic_shopping_cart_black_24dp), 0, 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-            pref.setTitle(ssb);
-        }
+        // Pro features always enabled; no purchase check needed
     }
 
     private void updateTechnicalInfo() {
@@ -1381,17 +1352,7 @@ public class ActivitySettings extends AppCompatActivity implements SharedPrefere
                         enabled = Boolean.parseBoolean(value);
                     else {
                         if (current == application) {
-                            // Pro features
-                            if ("log".equals(key)) {
-                                if (!IAB.isPurchased(ActivityPro.SKU_LOG, context))
-                                    return;
-                            } else if ("theme".equals(key)) {
-                                if (!IAB.isPurchased(ActivityPro.SKU_THEME, context))
-                                    return;
-                            } else if ("show_stats".equals(key)) {
-                                if (!IAB.isPurchased(ActivityPro.SKU_SPEED, context))
-                                    return;
-                            }
+                            // Pro features always enabled
 
                             if ("hosts_last_import".equals(key) || "hosts_last_download".equals(key))
                                 return;

@@ -88,11 +88,6 @@ public class ActivityLog extends AppCompatActivity implements SharedPreferences.
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        if (!IAB.isPurchased(ActivityPro.SKU_LOG, this)) {
-            startActivity(new Intent(this, ActivityPro.class));
-            finish();
-        }
-
         Util.setTheme(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.logging);
@@ -257,25 +252,23 @@ public class ActivityLog extends AppCompatActivity implements SharedPreferences.
                                 return true;
 
                             case R.id.menu_allow:
-                                if (IAB.isPurchased(ActivityPro.SKU_FILTER, ActivityLog.this)) {
+                                if (true) {
                                     DatabaseHelper.getInstance(ActivityLog.this).updateAccess(packet, dname, 0);
                                     ServiceSinkhole.reload("allow host", ActivityLog.this, false);
                                     Intent main = new Intent(ActivityLog.this, ActivityMain.class);
                                     main.putExtra(ActivityMain.EXTRA_SEARCH, Integer.toString(uid));
                                     startActivity(main);
-                                } else
-                                    startActivity(new Intent(ActivityLog.this, ActivityPro.class));
+                                }
                                 return true;
 
                             case R.id.menu_block:
-                                if (IAB.isPurchased(ActivityPro.SKU_FILTER, ActivityLog.this)) {
+                                if (true) {
                                     DatabaseHelper.getInstance(ActivityLog.this).updateAccess(packet, dname, 1);
                                     ServiceSinkhole.reload("block host", ActivityLog.this, false);
                                     Intent main = new Intent(ActivityLog.this, ActivityMain.class);
                                     main.putExtra(ActivityMain.EXTRA_SEARCH, Integer.toString(uid));
                                     startActivity(main);
-                                } else
-                                    startActivity(new Intent(ActivityLog.this, ActivityPro.class));
+                                }
                                 return true;
 
                             case R.id.menu_copy:
@@ -507,7 +500,7 @@ public class ActivityLog extends AppCompatActivity implements SharedPreferences.
 
             case R.id.menu_log_support:
                 Intent intent = new Intent(Intent.ACTION_VIEW);
-                intent.setData(Uri.parse("https://github.com/M66B/NetGuard/blob/master/FAQ.md#user-content-faq27"));
+                intent.setData(Uri.parse("https://github.com/zarurc/NetGuard"));
                 if (getPackageManager().resolveActivity(intent, 0) != null)
                     startActivity(intent);
                 return true;

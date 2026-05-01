@@ -93,8 +93,6 @@ public class ActivityMain extends AppCompatActivity implements SharedPreferences
     private AlertDialog dialogVpn = null;
     private AlertDialog dialogDoze = null;
     private AlertDialog dialogLegend = null;
-    private IAB iab = null;
-
     private static final int REQUEST_VPN = 1;
     private static final int REQUEST_INVITE = 2;
     public static final int REQUEST_ROAMING = 3;
@@ -419,36 +417,6 @@ public class ActivityMain extends AppCompatActivity implements SharedPreferences
         // Fill application list
         updateApplicationList(getIntent().getStringExtra(EXTRA_SEARCH));
 
-        // Update IAB SKUs
-        try {
-            iab = new IAB(new IAB.Delegate() {
-                @Override
-                public void onReady(IAB iab) {
-                    try {
-                        iab.updatePurchases();
-
-                        if (!IAB.isPurchased(ActivityPro.SKU_LOG, ActivityMain.this))
-                            prefs.edit().putBoolean("log", false).apply();
-                        if (!IAB.isPurchased(ActivityPro.SKU_THEME, ActivityMain.this)) {
-                            if (!"teal".equals(prefs.getString("theme", "teal")))
-                                prefs.edit().putString("theme", "teal").apply();
-                        }
-                        if (!IAB.isPurchased(ActivityPro.SKU_NOTIFY, ActivityMain.this))
-                            prefs.edit().putBoolean("install", false).apply();
-                        if (!IAB.isPurchased(ActivityPro.SKU_SPEED, ActivityMain.this))
-                            prefs.edit().putBoolean("show_stats", false).apply();
-                    } catch (Throwable ex) {
-                        Log.e(TAG, ex.toString() + "\n" + Log.getStackTraceString(ex));
-                    } finally {
-                        iab.unbind();
-                    }
-                }
-            }, this);
-            iab.bind();
-        } catch (Throwable ex) {
-            Log.e(TAG, ex.toString() + "\n" + Log.getStackTraceString(ex));
-        }
-
         // Handle intent
         checkExtras(getIntent());
     }
@@ -571,11 +539,6 @@ public class ActivityMain extends AppCompatActivity implements SharedPreferences
             dialogLegend = null;
         }
 
-
-        if (iab != null) {
-            iab.unbind();
-            iab = null;
-        }
 
         super.onDestroy();
     }
@@ -879,10 +842,7 @@ public class ActivityMain extends AppCompatActivity implements SharedPreferences
 
             case R.id.menu_log:
                 if (Util.canFilter(this))
-                    if (IAB.isPurchased(ActivityPro.SKU_LOG, this))
-                        startActivity(new Intent(this, ActivityLog.class));
-                    else
-                        startActivity(new Intent(this, ActivityPro.class));
+                    startActivity(new Intent(this, ActivityLog.class));
                 else
                     Toast.makeText(this, R.string.msg_unavailable, Toast.LENGTH_SHORT).show();
                 return true;

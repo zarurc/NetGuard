@@ -87,6 +87,7 @@ android {
 
     lint {
         disable 'MissingTranslation'
+        disable 'ExtraTranslation'
     }
     namespace 'eu.faircode.netguard'
     buildFeatures {
