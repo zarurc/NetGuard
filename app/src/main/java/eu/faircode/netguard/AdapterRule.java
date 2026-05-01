@@ -58,6 +58,8 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.PopupMenu;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -92,6 +94,7 @@ public class AdapterRule extends RecyclerView.Adapter<AdapterRule.ViewHolder> im
     private boolean wifiActive = true;
     private boolean otherActive = true;
     private boolean live = true;
+    private static final String PAYLOAD_TEMP_TICK = "TEMP_ALLOW_TICK";
     private List<Rule> listAll = new ArrayList<>();
     private List<Rule> listFiltered = new ArrayList<>();
 
@@ -130,6 +133,7 @@ public class AdapterRule extends RecyclerView.Adapter<AdapterRule.ViewHolder> im
         public CheckBox cbOther;
         public ImageView ivScreenOther;
         public TextView tvRoaming;
+        public TextView tvTempAllow;
 
         public TextView tvRemarkMessaging;
         public TextView tvRemarkDownload;
@@ -190,6 +194,7 @@ public class AdapterRule extends RecyclerView.Adapter<AdapterRule.ViewHolder> im
             cbOther = itemView.findViewById(R.id.cbOther);
             ivScreenOther = itemView.findViewById(R.id.ivScreenOther);
             tvRoaming = itemView.findViewById(R.id.tvRoaming);
+            tvTempAllow = itemView.findViewById(R.id.tvTempAllow);
 
             tvRemarkMessaging = itemView.findViewById(R.id.tvRemarkMessaging);
             tvRemarkDownload = itemView.findViewById(R.id.tvRemarkDownload);
@@ -334,6 +339,15 @@ public class AdapterRule extends RecyclerView.Adapter<AdapterRule.ViewHolder> im
     }
 
     @Override
+    public void onBindViewHolder(ViewHolder holder, int position, List<Object> payloads) {
+        if (!payloads.isEmpty() && PAYLOAD_TEMP_TICK.equals(payloads.get(0))) {
+            bindTempAllowView(holder, listFiltered.get(position), holder.itemView.getContext());
+            return;
+        }
+        onBindViewHolder(holder, position);
+    }
+
+    @Override
     public void onBindViewHolder(final ViewHolder holder, int position) {
         final Context context = holder.itemView.getContext();
 
@@ -455,6 +469,8 @@ public class AdapterRule extends RecyclerView.Adapter<AdapterRule.ViewHolder> im
         holder.tvRoaming.setTextColor(rule.apply ? colorOff : colorGrayed);
         holder.tvRoaming.setAlpha(otherActive ? 1 : 0.5f);
         holder.tvRoaming.setVisibility(rule.roaming && (!rule.other_blocked || rule.screen_other) ? View.VISIBLE : View.INVISIBLE);
+
+        bindTempAllowView(holder, rule, context);
 
         holder.tvRemarkMessaging.setVisibility(messaging.contains(rule.packageName) ? View.VISIBLE : View.GONE);
         holder.tvRemarkDownload.setVisibility(download.contains(rule.packageName) ? View.VISIBLE : View.GONE);
@@ -969,6 +985,192 @@ public class AdapterRule extends RecyclerView.Adapter<AdapterRule.ViewHolder> im
             NotificationManagerCompat.from(context).cancel(rule.uid);
             ServiceSinkhole.reload("rule changed", context, false);
         }
+    }
+
+    private void bindTempAllowView(final ViewHolder holder, final Rule rule, final Context context) {
+        // Cancel any pending countdown refresh from a previous bind of this ViewHolder
+        Runnable existingRefresh = (Runnable) holder.tvTempAllow.getTag(R.id.tvTempAllow);
+        if (existingRefresh != null) {
+            holder.tvTempAllow.removeCallbacks(existingRefresh);
+            holder.tvTempAllow.setTag(R.id.tvTempAllow, null);
+        }
+
+        if (!rule.other_blocked) {
+            holder.tvTempAllow.setVisibility(View.GONE);
+            holder.tvTempAllow.setOnClickListener(null);
+            return;
+        }
+
+        long now = System.currentTimeMillis();
+        boolean tempAllowActive = rule.other_temp_allow > now;
+        holder.tvTempAllow.setVisibility(View.VISIBLE);
+
+        Drawable icon = ContextCompat.getDrawable(context, tempAllowActive ? R.drawable.timer_on : R.drawable.timer_off);
+        holder.tvTempAllow.setCompoundDrawablesRelativeWithIntrinsicBounds(icon, null, null, null);
+
+        if (tempAllowActive) {
+            long remaining = rule.other_temp_allow - now;
+            String label = remaining >= 3600000L
+                    ? context.getString(R.string.title_temp_allow_remaining_h, remaining / 3600000L)
+                    : context.getString(R.string.title_temp_allow_remaining_m, remaining / 60000L);
+            holder.tvTempAllow.setText(label);
+            holder.tvTempAllow.setTextColor(colorOn);
+            holder.tvTempAllow.setContentDescription(
+                    context.getString(R.string.title_temp_allow_active_desc, label));
+
+            long delay = remaining > 60000L ? (remaining % 60000L == 0 ? 60000L : remaining % 60000L) : remaining;
+            Runnable refresh = new Runnable() {
+                @Override
+                public void run() {
+                    int pos = holder.getAdapterPosition();
+                    if (pos != RecyclerView.NO_POSITION)
+                        notifyItemChanged(pos, PAYLOAD_TEMP_TICK);
+                }
+            };
+            holder.tvTempAllow.setTag(R.id.tvTempAllow, refresh);
+            holder.tvTempAllow.postDelayed(refresh, delay);
+        } else {
+            holder.tvTempAllow.setText(null);
+            holder.tvTempAllow.setContentDescription(
+                    context.getString(R.string.title_temp_allow_inactive_desc));
+        }
+
+        holder.tvTempAllow.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showTempAllowDialog(context, rule, listAll);
+            }
+        });
+    }
+
+    private void showTempAllowDialog(final Context context, final Rule rule, final List<Rule> listAll) {
+        long now = System.currentTimeMillis();
+        final boolean active = rule.other_temp_allow > now;
+
+        final long[] durations = {
+                10 * 60 * 1000L,
+                30 * 60 * 1000L,
+                60 * 60 * 1000L,
+                12 * 60 * 60 * 1000L,
+                24 * 60 * 60 * 1000L
+        };
+        final String[] durationLabels = {
+                context.getString(R.string.title_temp_allow_10m),
+                context.getString(R.string.title_temp_allow_30m),
+                context.getString(R.string.title_temp_allow_1h),
+                context.getString(R.string.title_temp_allow_12h),
+                context.getString(R.string.title_temp_allow_24h)
+        };
+
+        LayoutInflater inflater = LayoutInflater.from(context);
+        View view = inflater.inflate(R.layout.temp_allow_dialog, null, false);
+
+        ImageView ivTimer = view.findViewById(R.id.ivDialogTimer);
+        TextView tvAppName = view.findViewById(R.id.tvDialogAppName);
+        TextView tvStatus = view.findViewById(R.id.tvDialogStatus);
+        final RadioGroup rgDurations = view.findViewById(R.id.rgDurations);
+
+        ivTimer.setImageDrawable(ContextCompat.getDrawable(context,
+                active ? R.drawable.timer_on : R.drawable.timer_off));
+        tvAppName.setText(rule.name);
+
+        // Show remaining time when a temp allow is already active so the user
+        // knows they're replacing it (not extending). Wifi has no temp allow — temp allow
+        // is intentionally mobile-only since that's the common use case (saving data while
+        // letting an app through briefly on the go).
+        if (active) {
+            long remaining = rule.other_temp_allow - now;
+            String remainingLabel = remaining >= 3600000L
+                    ? context.getString(R.string.title_temp_allow_remaining_h, remaining / 3600000L)
+                    : context.getString(R.string.title_temp_allow_remaining_m, remaining / 60000L);
+            tvStatus.setText(context.getString(R.string.title_temp_allow_status_active, remainingLabel));
+            tvStatus.setTextColor(colorOn);
+            tvStatus.setVisibility(View.VISIBLE);
+        }
+
+        // Pre-select closest duration bucket when already active
+        int preselect = 0;
+        if (active) {
+            long remaining = rule.other_temp_allow - now;
+            long minDiff = Long.MAX_VALUE;
+            for (int i = 0; i < durations.length; i++) {
+                long diff = Math.abs(durations[i] - remaining);
+                if (diff < minDiff) {
+                    minDiff = diff;
+                    preselect = i;
+                }
+            }
+        }
+
+        float density = context.getResources().getDisplayMetrics().density;
+        int padH = (int) (24 * density);
+        int padV = (int) (12 * density);
+
+        for (int i = 0; i < durationLabels.length; i++) {
+            RadioButton rb = new RadioButton(context);
+            rb.setId(i);
+            rb.setText(durationLabels[i]);
+            rb.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 15);
+            rb.setPadding(padH, padV, padH, padV);
+            if (i == preselect) rb.setChecked(true);
+            rgDurations.addView(rb);
+        }
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(context)
+                .setView(view)
+                .setPositiveButton(R.string.title_temp_allow_allow, new android.content.DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(android.content.DialogInterface dialog, int which) {
+                        int selectedId = rgDurations.getCheckedRadioButtonId();
+                        if (selectedId < 0) return;
+                        applyTempAllow(context, rule, listAll, durations[selectedId]);
+                    }
+                })
+                .setNegativeButton(android.R.string.cancel, null);
+
+        if (active) {
+            builder.setNeutralButton(R.string.title_temp_allow_cancel, new android.content.DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(android.content.DialogInterface dialog, int which) {
+                    applyTempAllow(context, rule, listAll, -1L);
+                }
+            });
+        }
+
+        final AlertDialog dialog = builder.show();
+
+        if (active) {
+            Button btnStop = dialog.getButton(AlertDialog.BUTTON_NEUTRAL);
+            if (btnStop != null)
+                btnStop.setTextColor(Color.parseColor("#F44336"));
+        }
+    }
+
+    private void applyTempAllow(final Context context, final Rule rule, final List<Rule> listAll, final long chosen) {
+        long newExpiry = chosen < 0 ? 0L : System.currentTimeMillis() + chosen;
+        rule.other_temp_allow = newExpiry;
+        if (chosen < 0) {
+            ServiceSinkhole.cancelTempAllow(rule.packageName, context);
+        } else {
+            ServiceSinkhole.setTempAllow(rule.packageName, chosen, context);
+        }
+        // Sync related Rule objects in-memory so their UI updates immediately
+        for (String pkg : rule.related) {
+            for (Rule related : listAll)
+                if (related.packageName.equals(pkg)) {
+                    related.other_temp_allow = newExpiry;
+                    break;
+                }
+            if (chosen < 0)
+                ServiceSinkhole.cancelTempAllow(pkg, context);
+            else
+                ServiceSinkhole.setTempAllow(pkg, chosen, context);
+        }
+        int pos = listAll.indexOf(rule);
+        if (pos >= 0)
+            notifyItemChanged(pos);
+        else
+            notifyDataSetChanged();
     }
 
     @Override

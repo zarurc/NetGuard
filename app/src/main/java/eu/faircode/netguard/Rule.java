@@ -70,6 +70,8 @@ public class Rule {
     public boolean roaming = false;
     public boolean lockdown = false;
 
+    public volatile long other_temp_allow = 0L; // epoch ms when temp allow expires; 0 = not active
+
     public boolean apply = true;
     public boolean notify = true;
 
@@ -211,6 +213,7 @@ public class Rule {
             SharedPreferences lockdown = context.getSharedPreferences("lockdown", Context.MODE_PRIVATE);
             SharedPreferences apply = context.getSharedPreferences("apply", Context.MODE_PRIVATE);
             SharedPreferences notify = context.getSharedPreferences("notify", Context.MODE_PRIVATE);
+            SharedPreferences temp_allow = context.getSharedPreferences("other_temp_allow", Context.MODE_PRIVATE);
 
             // Get settings
             boolean default_wifi = prefs.getBoolean("whitelist_wifi", true);
@@ -367,6 +370,8 @@ public class Rule {
                         rule.screen_other = screen_other.getBoolean(info.packageName, rule.screen_other_default) && screen_on;
                         rule.roaming = roaming.getBoolean(info.packageName, rule.roaming_default);
                         rule.lockdown = lockdown.getBoolean(info.packageName, false);
+
+                        rule.other_temp_allow = temp_allow.getLong(info.packageName, 0L);
 
                         rule.apply = apply.getBoolean(info.packageName, true);
                         rule.notify = notify.getBoolean(info.packageName, true);

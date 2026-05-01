@@ -294,6 +294,23 @@ Your internet traffic is not being sent to a remote VPN server.</string>
     <string name="title_block_wifi">Block Wi-Fi</string>
     <string name="title_allow_other">Allow mobile</string>
     <string name="title_block_other">Block mobile</string>
+    <string name="title_temp_allow_data">Temporarily allow mobile data</string>
+    <string name="title_temp_allow_dialog">Temporarily allow mobile data for %1$s</string>
+    <string name="title_temp_allow_cancel">Stop allowing now</string>
+    <string name="title_temp_allow_10m">10 minutes</string>
+    <string name="title_temp_allow_30m">30 minutes</string>
+    <string name="title_temp_allow_1h">1 hour</string>
+    <string name="title_temp_allow_12h">12 hours</string>
+    <string name="title_temp_allow_24h">24 hours</string>
+    <string name="title_temp_allow_remaining_h">%1$dh</string>
+    <string name="title_temp_allow_remaining_m">%1$dm</string>
+    <string name="title_temp_allow_active_desc">Temp allow active: %1$s remaining. Tap to change.</string>
+    <string name="title_temp_allow_inactive_desc">Tap to temporarily allow mobile data</string>
+    <string name="title_temp_allow_dialog_active">Temporarily allow mobile data for %1$s (%2$s remaining)</string>
+    <string name="title_temp_allow_expired_title">Temp allow expired</string>
+    <string name="title_temp_allow_expired_text">Mobile data blocked again for %1$s</string>
+    <string name="title_temp_allow_allow">Allow</string>
+    <string name="title_temp_allow_status_active">Active — %1$s remaining</string>
     <string name="title_root">root</string>
     <string name="title_mediaserver">mediaserver</string>
     <string name="title_gpsdaemon" translatable="false">GPS daemon</string>

@@ -124,6 +124,7 @@ public class ServiceSinkhole extends VpnService implements SharedPreferences.OnS
     private boolean registeredApState = false;
     private boolean registeredConnectivityChanged = false;
     private boolean registeredPackageChanged = false;
+    private boolean registeredTempAllow = false;
 
     private boolean phone_state = false;
     private Object networkCallback = null;
@@ -176,6 +177,7 @@ public class ServiceSinkhole extends VpnService implements SharedPreferences.OnS
     private static final int NOTIFY_UPDATE = 8;
     public static final int NOTIFY_EXTERNAL = 9;
     public static final int NOTIFY_DOWNLOAD = 10;
+    private static final int NOTIFY_TEMP_ALLOW_EXPIRED_BASE = 11000;
 
     public static final String EXTRA_COMMAND = "Command";
     private static final String EXTRA_REASON = "Reason";
@@ -203,6 +205,8 @@ public class ServiceSinkhole extends VpnService implements SharedPreferences.OnS
     private static final String ACTION_HOUSE_HOLDING = "eu.faircode.netguard.HOUSE_HOLDING";
     private static final String ACTION_SCREEN_OFF_DELAYED = "eu.faircode.netguard.SCREEN_OFF_DELAYED";
     private static final String ACTION_WATCHDOG = "eu.faircode.netguard.WATCHDOG";
+    private static final String ACTION_TEMP_ALLOW_EXPIRED = "eu.faircode.netguard.TEMP_ALLOW_EXPIRED";
+    private static final String EXTRA_TEMP_ALLOW_PACKAGE = "package";
 
     private native long jni_init(int sdk);
 
@@ -1948,7 +1952,10 @@ public class ServiceSinkhole extends VpnService implements SharedPreferences.OnS
             for (Rule rule : listRule) {
                 boolean blocked = (metered ? rule.other_blocked : rule.wifi_blocked);
                 boolean screen = (metered ? rule.screen_other : rule.screen_wifi);
-                if ((!blocked || (screen && last_interactive)) &&
+                // Temp allow: grant mobile data temporarily even when other_blocked
+                boolean tempAllow = (metered && rule.other_blocked &&
+                        rule.other_temp_allow > System.currentTimeMillis());
+                if ((!blocked || (screen && last_interactive) || tempAllow) &&
                         (!metered || !(rule.roaming && roaming)) &&
                         (!lockdown || rule.lockdown))
                     listAllowed.add(rule);
@@ -2182,6 +2189,30 @@ public class ServiceSinkhole extends VpnService implements SharedPreferences.OnS
                             am.set(AlarmManager.RTC_WAKEUP, new Date().getTime() + 15 * 1000L, pi);
                         else
                             am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, new Date().getTime() + 15 * 1000L, pi);
+                    }
+                }
+            });
+        }
+    };
+
+    private BroadcastReceiver tempAllowReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(final Context context, final Intent intent) {
+            Log.i(TAG, "Received " + intent);
+            executor.submit(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        String pkg = intent.getStringExtra(EXTRA_TEMP_ALLOW_PACKAGE);
+                        if (pkg != null) {
+                            SharedPreferences temp_allow = context.getSharedPreferences("other_temp_allow", Context.MODE_PRIVATE);
+                            temp_allow.edit().remove(pkg).apply();
+                            Log.i(TAG, "Temp allow expired for " + pkg);
+                            showTempAllowExpiredNotification(pkg, context);
+                        }
+                        reload("temp allow expired", ServiceSinkhole.this, false);
+                    } catch (Throwable ex) {
+                        Log.e(TAG, ex.toString() + "\n" + Log.getStackTraceString(ex));
                     }
                 }
             });
@@ -2609,6 +2640,12 @@ public class ServiceSinkhole extends VpnService implements SharedPreferences.OnS
         ContextCompat.registerReceiver(this, apStateReceiver, ifAp, ContextCompat.RECEIVER_NOT_EXPORTED);
         registeredApState = true;
 
+        // Listen for temp allow expirations (triggered by AlarmManager)
+        IntentFilter ifTempAllow = new IntentFilter();
+        ifTempAllow.addAction(ACTION_TEMP_ALLOW_EXPIRED);
+        ContextCompat.registerReceiver(this, tempAllowReceiver, ifTempAllow, ContextCompat.RECEIVER_NOT_EXPORTED);
+        registeredTempAllow = true;
+
         // Listen for added/removed applications
         IntentFilter ifPackage = new IntentFilter();
         ifPackage.addAction(Intent.ACTION_PACKAGE_ADDED);
@@ -2979,6 +3016,10 @@ public class ServiceSinkhole extends VpnService implements SharedPreferences.OnS
             if (registeredApState) {
                 unregisterReceiver(apStateReceiver);
                 registeredApState = false;
+            }
+            if (registeredTempAllow) {
+                unregisterReceiver(tempAllowReceiver);
+                registeredTempAllow = false;
             }
             if (registeredPackageChanged) {
                 unregisterReceiver(packageChangedReceiver);
@@ -3585,6 +3626,76 @@ public class ServiceSinkhole extends VpnService implements SharedPreferences.OnS
                     Log.e(TAG, exex + "\n" + Log.getStackTraceString(exex));
                 }
         }
+    }
+
+    private void showTempAllowExpiredNotification(String packageName, Context context) {
+        String appName;
+        try {
+            PackageManager pm = context.getPackageManager();
+            appName = (String) pm.getApplicationLabel(pm.getApplicationInfo(packageName, 0));
+        } catch (PackageManager.NameNotFoundException ex) {
+            appName = packageName;
+        }
+
+        Intent main = new Intent(context, ActivityMain.class);
+        PendingIntent pi = PendingIntentCompat.getActivity(context, 0, main, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        TypedValue tv = new TypedValue();
+        getTheme().resolveAttribute(R.attr.colorPrimary, tv, true);
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, "notify")
+                .setSmallIcon(R.drawable.ic_security_white_24dp)
+                .setContentTitle(getString(R.string.title_temp_allow_expired_title))
+                .setContentText(getString(R.string.title_temp_allow_expired_text, appName))
+                .setContentIntent(pi)
+                .setColor(tv.data)
+                .setOngoing(false)
+                .setAutoCancel(true);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+            builder.setCategory(NotificationCompat.CATEGORY_STATUS)
+                    .setVisibility(NotificationCompat.VISIBILITY_SECRET);
+
+        if (Util.canNotify(context))
+            NotificationManagerCompat.from(context).notify(
+                    NOTIFY_TEMP_ALLOW_EXPIRED_BASE + Math.abs(packageName.hashCode() % 1000),
+                    builder.build());
+    }
+
+    public static void setTempAllow(String packageName, long durationMs, Context context) {
+        SharedPreferences temp_allow = context.getSharedPreferences("other_temp_allow", Context.MODE_PRIVATE);
+        long expiryMs = System.currentTimeMillis() + durationMs;
+        temp_allow.edit().putLong(packageName, expiryMs).apply();
+
+        AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        Intent i = new Intent(ACTION_TEMP_ALLOW_EXPIRED);
+        i.setPackage(context.getPackageName());
+        i.putExtra(EXTRA_TEMP_ALLOW_PACKAGE, packageName);
+        PendingIntent pi = PendingIntentCompat.getBroadcast(context, packageName.hashCode(),
+                i, PendingIntent.FLAG_UPDATE_CURRENT);
+        am.cancel(pi);
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M)
+            am.set(AlarmManager.RTC_WAKEUP, expiryMs, pi);
+        else
+            am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, expiryMs, pi);
+
+        Log.i(TAG, "Temp allow set for " + packageName + " until " + new Date(expiryMs));
+        reload("temp allow set", context, false);
+    }
+
+    public static void cancelTempAllow(String packageName, Context context) {
+        SharedPreferences temp_allow = context.getSharedPreferences("other_temp_allow", Context.MODE_PRIVATE);
+        temp_allow.edit().remove(packageName).apply();
+
+        AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        Intent i = new Intent(ACTION_TEMP_ALLOW_EXPIRED);
+        i.setPackage(context.getPackageName());
+        i.putExtra(EXTRA_TEMP_ALLOW_PACKAGE, packageName);
+        PendingIntent pi = PendingIntentCompat.getBroadcast(context, packageName.hashCode(),
+                i, PendingIntent.FLAG_UPDATE_CURRENT);
+        am.cancel(pi);
+
+        Log.i(TAG, "Temp allow cancelled for " + packageName);
+        reload("temp allow cancelled", context, false);
     }
 
     public static void reload(String reason, Context context, boolean interactive) {
