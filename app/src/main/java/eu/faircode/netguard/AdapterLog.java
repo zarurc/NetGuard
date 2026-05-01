@@ -56,8 +56,6 @@ public class AdapterLog extends CursorAdapter {
     private int colVersion;
     private int colProtocol;
     private int colFlags;
-    private int colSAddr;
-    private int colSPort;
     private int colDAddr;
     private int colDPort;
     private int colDName;
@@ -82,8 +80,6 @@ public class AdapterLog extends CursorAdapter {
         colVersion = cursor.getColumnIndex("version");
         colProtocol = cursor.getColumnIndex("protocol");
         colFlags = cursor.getColumnIndex("flags");
-        colSAddr = cursor.getColumnIndex("saddr");
-        colSPort = cursor.getColumnIndex("sport");
         colDAddr = cursor.getColumnIndex("daddr");
         colDPort = cursor.getColumnIndex("dport");
         colDName = cursor.getColumnIndex("dname");
@@ -133,8 +129,6 @@ public class AdapterLog extends CursorAdapter {
         int version = (cursor.isNull(colVersion) ? -1 : cursor.getInt(colVersion));
         int protocol = (cursor.isNull(colProtocol) ? -1 : cursor.getInt(colProtocol));
         String flags = cursor.getString(colFlags);
-        String saddr = cursor.getString(colSAddr);
-        int sport = (cursor.isNull(colSPort) ? -1 : cursor.getInt(colSPort));
         String daddr = cursor.getString(colDAddr);
         int dport = (cursor.isNull(colDPort) ? -1 : cursor.getInt(colDPort));
         String dname = (cursor.isNull(colDName) ? null : cursor.getString(colDName));
@@ -148,8 +142,6 @@ public class AdapterLog extends CursorAdapter {
         TextView tvTime = view.findViewById(R.id.tvTime);
         TextView tvProtocol = view.findViewById(R.id.tvProtocol);
         TextView tvFlags = view.findViewById(R.id.tvFlags);
-        TextView tvSAddr = view.findViewById(R.id.tvSAddr);
-        TextView tvSPort = view.findViewById(R.id.tvSPort);
         final TextView tvDaddr = view.findViewById(R.id.tvDAddr);
         TextView tvDPort = view.findViewById(R.id.tvDPort);
         final TextView tvOrganization = view.findViewById(R.id.tvOrganization);
@@ -194,14 +186,11 @@ public class AdapterLog extends CursorAdapter {
         tvFlags.setText(flags);
         tvFlags.setVisibility(TextUtils.isEmpty(flags) ? View.GONE : View.VISIBLE);
 
-        // Show source and destination port
-        if (protocol == 6 || protocol == 17) {
-            tvSPort.setText(sport < 0 ? "" : getKnownPort(sport));
-            tvDPort.setText(dport < 0 ? "" : getKnownPort(dport));
-        } else {
-            tvSPort.setText(sport < 0 ? "" : Integer.toString(sport));
-            tvDPort.setText(dport < 0 ? "" : Integer.toString(dport));
-        }
+        // Show destination port
+        if (protocol == 6 || protocol == 17)
+            tvDPort.setText(dport < 0 ? "" : ":" + getKnownPort(dport));
+        else
+            tvDPort.setText(dport < 0 ? "" : ":" + dport);
 
         // Application icon
         ApplicationInfo info = null;
@@ -246,18 +235,19 @@ public class AdapterLog extends CursorAdapter {
         boolean we = (android.os.Process.myUid() == uid);
 
         // https://android.googlesource.com/platform/system/core/+/master/include/private/android_filesystem_config.h
-        uid = uid % 100000; // strip off user ID
-        if (uid == -1)
-            tvUid.setText("");
-        else if (uid == 0)
-            tvUid.setText(context.getString(R.string.title_root));
-        else if (uid == 9999)
-            tvUid.setText("-"); // nobody
+        int displayUid = uid % 100000;
+        String appLabel;
+        if (displayUid == -1)
+            appLabel = "";
+        else if (displayUid == 0)
+            appLabel = context.getString(R.string.title_root);
+        else if (displayUid == 9999)
+            appLabel = "-";
+        else if (info != null)
+            appLabel = pm.getApplicationLabel(info).toString();
         else
-            tvUid.setText(Integer.toString(uid));
-
-        // Show source address
-        tvSAddr.setText(getKnownAddress(saddr));
+            appLabel = "uid " + displayUid;
+        tvUid.setText(appLabel);
 
         // Show destination address
         if (!we && resolve && !isKnownAddress(daddr))
@@ -280,7 +270,7 @@ public class AdapterLog extends CursorAdapter {
 
                     @Override
                     protected void onPostExecute(String name) {
-                        tvDaddr.setText(">" + name);
+                        tvDaddr.setText(name);
                         ViewCompat.setHasTransientState(tvDaddr, false);
                     }
                 }.execute(daddr);
