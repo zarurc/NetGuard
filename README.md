@@ -1,8 +1,11 @@
-# NetGuard (fork)
+# NetGuard
 
-This is a personal fork of [M66B/NetGuard](https://github.com/M66B/NetGuard), a no-root Android firewall.
+A personal fork of [M66B/NetGuard](https://github.com/M66B/NetGuard) — a no-root Android firewall — with extra features for fine-grained network control.
 
-## What's different
+## Features
+
+### Per-App Firewall
+Block or allow any app's access to mobile data and Wi-Fi independently, with no root required.
 
 ### Temporary Allow
 Lets you temporarily allow a blocked app through the firewall for a fixed duration without permanently changing its rules.
