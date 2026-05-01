@@ -1,10 +1,41 @@
 <resources>
 
-    <style name="TextLarge" parent="@android:style/TextAppearance.Material.Large" />
+    <!-- 5-level type scale for a precision-instrument security UI -->
 
-    <style name="TextMedium" parent="@android:style/TextAppearance.Material.Medium" />
+    <!-- Secondary/label text: meta info, checkboxes, list details -->
+    <style name="TextSmall">
+        <item name="android:textSize">12sp</item>
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:letterSpacing">0.02</item>
+    </style>
 
-    <style name="TextSmall" parent="@android:style/TextAppearance.Material.Small" />
+    <!-- Data values: IPs, ports, timestamps, byte counts — monospace for column alignment -->
+    <style name="TextMono" parent="TextSmall">
+        <item name="android:fontFamily">monospace</item>
+        <item name="android:letterSpacing">0</item>
+    </style>
 
-    <style name="TextTitle" parent="@android:style/TextAppearance.Material.Title" />
+    <!-- Primary list label: app names, primary row text -->
+    <style name="TextMedium">
+        <item name="android:textSize">15sp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:letterSpacing">0.005</item>
+    </style>
+
+    <!-- Section headers: compact all-caps with primary-color accent -->
+    <style name="TextTitle">
+        <item name="android:textSize">11sp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:letterSpacing">0.1</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="android:textColor">?attr/colorPrimary</item>
+    </style>
+
+    <!-- Display text: large numbers, prominent headings -->
+    <style name="TextLarge">
+        <item name="android:textSize">20sp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:letterSpacing">-0.01</item>
+    </style>
+
 </resources>

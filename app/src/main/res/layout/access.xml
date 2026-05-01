@@ -11,7 +11,7 @@
         android:layout_width="60dp"
         android:layout_height="wrap_content"
         android:layout_gravity="top"
-        android:textAppearance="@style/TextSmall" />
+        android:textAppearance="@style/TextMono" />
 
     <ImageView
         android:id="@+id/ivBlock"
@@ -32,7 +32,7 @@
             android:layout_height="wrap_content"
             android:ellipsize="start"
             android:singleLine="true"
-            android:textAppearance="@style/TextSmall" />
+            android:textAppearance="@style/TextMono" />
 
         <LinearLayout
             android:id="@+id/llTraffic"
@@ -46,9 +46,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:singleLine="true"
-                android:textAppearance="@style/TextSmall"
-                android:textSize="10sp"
-                android:typeface="monospace" />
+                android:textAppearance="@style/TextMono"
+                android:textSize="10sp" />
 
             <TextView
                 android:id="@+id/tvTraffic"
@@ -57,9 +56,8 @@
                 android:layout_marginLeft="4dp"
                 android:layout_marginStart="4dp"
                 android:singleLine="true"
-                android:textAppearance="@style/TextSmall"
-                android:textSize="10sp"
-                android:typeface="monospace" />
+                android:textAppearance="@style/TextMono"
+                android:textSize="10sp" />
         </LinearLayout>
     </LinearLayout>
 </LinearLayout>

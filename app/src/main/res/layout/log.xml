@@ -16,14 +16,14 @@
             android:layout_width="54dp"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
-            android:textAppearance="@style/TextSmall"
-            android:textSize="12sp" />
+            android:textAppearance="@style/TextMono" />
 
         <ImageView
             android:id="@+id/ivIcon"
-            android:layout_width="24dip"
-            android:layout_height="24dip"
-            android:layout_gravity="center_vertical" />
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_gravity="center_vertical"
+            android:importantForAccessibility="no" />
 
         <TextView
             android:id="@+id/tvUid"
@@ -31,22 +31,23 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
             android:gravity="end"
-            android:textAppearance="@style/TextSmall"
-            android:textSize="12sp" />
+            android:textAppearance="@style/TextMono" />
 
         <ImageView
             android:id="@+id/ivConnection"
-            android:layout_width="16dip"
-            android:layout_height="16dip"
+            android:layout_width="16dp"
+            android:layout_height="16dp"
             android:layout_gravity="center_vertical"
             android:layout_marginLeft="4dp"
-            android:layout_marginStart="4dp" />
+            android:layout_marginStart="4dp"
+            android:importantForAccessibility="no" />
 
         <ImageView
             android:id="@+id/ivInteractive"
-            android:layout_width="16dip"
-            android:layout_height="16dip"
-            android:layout_gravity="center_vertical" />
+            android:layout_width="16dp"
+            android:layout_height="16dp"
+            android:layout_gravity="center_vertical"
+            android:importantForAccessibility="no" />
 
         <LinearLayout
             android:layout_width="wrap_content"
@@ -61,16 +62,14 @@
                 android:layout_width="40dp"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
-                android:textAppearance="@style/TextSmall"
-                android:textSize="12sp" />
+                android:textAppearance="@style/TextMono" />
 
             <TextView
                 android:id="@+id/tvFlags"
                 android:layout_width="40dp"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
-                android:textAppearance="@style/TextSmall"
-                android:textSize="12sp" />
+                android:textAppearance="@style/TextMono" />
         </LinearLayout>
 
         <LinearLayout
@@ -92,8 +91,7 @@
                     android:layout_width="40dp"
                     android:layout_height="wrap_content"
                     android:gravity="end"
-                    android:textAppearance="@style/TextSmall"
-                    android:textSize="12sp" />
+                    android:textAppearance="@style/TextMono" />
 
                 <TextView
                     android:id="@+id/tvSAddr"
@@ -101,8 +99,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="4dp"
                     android:layout_marginStart="4dp"
-                    android:textAppearance="@style/TextSmall"
-                    android:textSize="12sp" />
+                    android:textAppearance="@style/TextMono" />
             </LinearLayout>
 
             <LinearLayout
@@ -115,8 +112,7 @@
                     android:layout_width="40dp"
                     android:layout_height="wrap_content"
                     android:gravity="end"
-                    android:textAppearance="@style/TextSmall"
-                    android:textSize="12sp" />
+                    android:textAppearance="@style/TextMono" />
 
                 <TextView
                     android:id="@+id/tvDAddr"
@@ -124,8 +120,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="4dp"
                     android:layout_marginStart="4dp"
-                    android:textAppearance="@style/TextSmall"
-                    android:textSize="12sp" />
+                    android:textAppearance="@style/TextMono" />
             </LinearLayout>
 
             <TextView
@@ -133,6 +128,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textAppearance="@style/TextSmall"
+                android:textColor="?android:attr/textColorSecondary"
                 android:textSize="10sp"
                 android:visibility="gone" />
         </LinearLayout>
@@ -144,6 +140,5 @@
         android:layout_height="wrap_content"
         android:layout_marginLeft="50dp"
         android:layout_marginStart="50dp"
-        android:textAppearance="@style/TextSmall"
-        android:textSize="12sp" />
+        android:textAppearance="@style/TextSmall" />
 </LinearLayout>

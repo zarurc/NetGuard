@@ -218,6 +218,7 @@ Your internet traffic is not being sent to a remote VPN server.</string>
     <string name="msg_filter">Using filtering will cause Android to attribute data and power usage to NetGuard - Android assumes the data and power are being used by NetGuard, rather than the original apps</string>
     <string name="msg_filter4">Android 4 requires filtering to be enabled</string>
     <string name="msg_log_disabled">Traffic logging is disabled, use the switch above to enable logging. Traffic logging might result in extra battery usage.</string>
+    <string name="msg_log_empty">No connections logged yet. Open apps to see traffic here.</string>
     <string name="msg_clear_rules">This will reset the rules and conditions to their default values</string>
     <string name="msg_reset_access">This will delete access attempt log lines without allow/block rules</string>
     <string name="msg_import_last">Last import: %s</string>
@@ -365,4 +366,15 @@ Your internet traffic is not being sent to a remote VPN server.</string>
     </string-array>
 
     <string name="fingerprint" translatable="false">ef46f813d2c8a064d72c936b9b96d1cccc989378</string>
+
+    <string name="cd_open_app">Open app</string>
+    <string name="cd_app_settings">App settings</string>
+    <string name="cd_data_saver">Data saver</string>
+    <string name="cd_clear_rules">Clear rules</string>
+    <string name="cd_clear_access_log">Clear access log</string>
+    <string name="cd_firewall_toggle">Enable firewall</string>
+    <string name="cd_metered_network">Metered network</string>
+    <string name="cd_pending_rules">Pending rules</string>
+    <string name="cd_expand_app">Expand app details</string>
+    <string name="cd_live_updates">Live updates</string>
 </resources>

@@ -67,6 +67,7 @@ import androidx.core.content.ContextCompat;
 import androidx.core.graphics.drawable.DrawableCompat;
 import androidx.core.widget.CompoundButtonCompat;
 import androidx.preference.PreferenceManager;
+import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.load.DecodeFormat;
@@ -162,14 +163,14 @@ public class AdapterRule extends RecyclerView.Adapter<AdapterRule.ViewHolder> im
         public CheckBox cbLockdown;
         public ImageView ivLockdownLegend;
 
-        public ImageButton btnClear;
+        public Button btnClear;
 
         public LinearLayout llFilter;
         public ImageView ivLive;
         public TextView tvLogging;
         public Button btnLogging;
         public ListView lvAccess;
-        public ImageButton btnClearAccess;
+        public Button btnClearAccess;
         public CheckBox cbNotify;
 
         public ViewHolder(View itemView) {
@@ -296,28 +297,29 @@ public class AdapterRule extends RecyclerView.Adapter<AdapterRule.ViewHolder> im
     }
 
     public void set(List<Rule> listRule) {
+        List<Rule> newFiltered = new ArrayList<>(listRule);
+        DiffUtil.DiffResult diff = DiffUtil.calculateDiff(new RuleDiffCallback(listFiltered, newFiltered));
         listAll = listRule;
-        listFiltered = new ArrayList<>();
-        listFiltered.addAll(listRule);
-        notifyDataSetChanged();
+        listFiltered = newFiltered;
+        diff.dispatchUpdatesTo(this);
     }
 
     public void setWifiActive() {
         wifiActive = true;
         otherActive = false;
-        notifyDataSetChanged();
+        notifyItemRangeChanged(0, getItemCount());
     }
 
     public void setMobileActive() {
         wifiActive = false;
         otherActive = true;
-        notifyDataSetChanged();
+        notifyItemRangeChanged(0, getItemCount());
     }
 
     public void setDisconnected() {
         wifiActive = false;
         otherActive = false;
-        notifyDataSetChanged();
+        notifyItemRangeChanged(0, getItemCount());
     }
 
     public boolean isLive() {
@@ -641,7 +643,7 @@ public class AdapterRule extends RecyclerView.Adapter<AdapterRule.ViewHolder> im
                 view.getContext().getTheme().resolveAttribute(live ? R.attr.iconPause : R.attr.iconPlay, tv, true);
                 holder.ivLive.setImageResource(tv.resourceId);
                 if (live)
-                    AdapterRule.this.notifyDataSetChanged();
+                    AdapterRule.this.notifyItemRangeChanged(0, getItemCount());
             }
         });
 
@@ -675,7 +677,7 @@ public class AdapterRule extends RecyclerView.Adapter<AdapterRule.ViewHolder> im
                             prefs.edit().putBoolean("notify_access", false).apply();
                         }
                         ServiceSinkhole.reload("changed notify", context, false);
-                        AdapterRule.this.notifyDataSetChanged();
+                        AdapterRule.this.notifyItemRangeChanged(0, getItemCount());
                     }
                 });
 
@@ -686,7 +688,7 @@ public class AdapterRule extends RecyclerView.Adapter<AdapterRule.ViewHolder> im
                             cbLogging.setChecked(true);
                         prefs.edit().putBoolean("filter", checked).apply();
                         ServiceSinkhole.reload("changed filter", context, false);
-                        AdapterRule.this.notifyDataSetChanged();
+                        AdapterRule.this.notifyItemRangeChanged(0, getItemCount());
                     }
                 });
 
@@ -695,7 +697,7 @@ public class AdapterRule extends RecyclerView.Adapter<AdapterRule.ViewHolder> im
                     public void onCheckedChanged(CompoundButton compoundButton, boolean checked) {
                         prefs.edit().putBoolean("notify_access", checked).apply();
                         ServiceSinkhole.reload("changed notify", context, false);
-                        AdapterRule.this.notifyDataSetChanged();
+                        AdapterRule.this.notifyItemRangeChanged(0, getItemCount());
                     }
                 });
 
@@ -822,7 +824,7 @@ public class AdapterRule extends RecyclerView.Adapter<AdapterRule.ViewHolder> im
                                     @Override
                                     protected void onPostExecute(Long hosts) {
                                         rule.hosts = hosts;
-                                        notifyDataSetChanged();
+                                        notifyItemRangeChanged(0, getItemCount());
                                     }
                                 }.execute();
 
@@ -854,7 +856,7 @@ public class AdapterRule extends RecyclerView.Adapter<AdapterRule.ViewHolder> im
                     public void onSure() {
                         DatabaseHelper.getInstance(context).clearAccess(rule.uid, true);
                         if (!live)
-                            notifyDataSetChanged();
+                            notifyItemRangeChanged(0, getItemCount());
                         if (rv != null)
                             rv.scrollToPosition(holder.getAdapterPosition());
                     }
@@ -971,7 +973,7 @@ public class AdapterRule extends RecyclerView.Adapter<AdapterRule.ViewHolder> im
             updateRule(context, modified, false, listSearch);
 
         if (root) {
-            notifyDataSetChanged();
+            notifyItemRangeChanged(0, getItemCount());
             NotificationManagerCompat.from(context).cancel(rule.uid);
             ServiceSinkhole.reload("rule changed", context, false);
         }
@@ -1132,7 +1134,7 @@ public class AdapterRule extends RecyclerView.Adapter<AdapterRule.ViewHolder> im
         if (active) {
             Button btnStop = dialog.getButton(AlertDialog.BUTTON_NEUTRAL);
             if (btnStop != null)
-                btnStop.setTextColor(Color.parseColor("#F44336"));
+                btnStop.setTextColor(ContextCompat.getColor(context, R.color.color_error));
         }
     }
 
@@ -1156,11 +1158,11 @@ public class AdapterRule extends RecyclerView.Adapter<AdapterRule.ViewHolder> im
             else
                 ServiceSinkhole.setTempAllow(pkg, chosen, context);
         }
-        int pos = listAll.indexOf(rule);
+        int pos = listFiltered.indexOf(rule);
         if (pos >= 0)
             notifyItemChanged(pos);
         else
-            notifyDataSetChanged();
+            notifyItemRangeChanged(0, getItemCount());
     }
 
     @Override
@@ -1194,15 +1196,18 @@ public class AdapterRule extends RecyclerView.Adapter<AdapterRule.ViewHolder> im
 
             @Override
             protected void publishResults(CharSequence query, FilterResults result) {
-                listFiltered.clear();
+                List<Rule> newFiltered = new ArrayList<>();
                 if (result == null)
-                    listFiltered.addAll(listAll);
+                    newFiltered.addAll(listAll);
                 else {
-                    listFiltered.addAll((List<Rule>) result.values);
-                    if (listFiltered.size() == 1)
-                        listFiltered.get(0).expanded = true;
+                    newFiltered.addAll((List<Rule>) result.values);
+                    if (newFiltered.size() == 1)
+                        newFiltered.get(0).expanded = true;
                 }
-                notifyDataSetChanged();
+                DiffUtil.DiffResult diff = DiffUtil.calculateDiff(new RuleDiffCallback(listFiltered, newFiltered));
+                listFiltered.clear();
+                listFiltered.addAll(newFiltered);
+                diff.dispatchUpdatesTo(AdapterRule.this);
             }
         };
     }
@@ -1221,5 +1226,46 @@ public class AdapterRule extends RecyclerView.Adapter<AdapterRule.ViewHolder> im
     @Override
     public int getItemCount() {
         return listFiltered.size();
+    }
+
+    private static class RuleDiffCallback extends DiffUtil.Callback {
+        private final List<Rule> oldList;
+        private final List<Rule> newList;
+
+        RuleDiffCallback(List<Rule> oldList, List<Rule> newList) {
+            this.oldList = oldList;
+            this.newList = newList;
+        }
+
+        @Override
+        public int getOldListSize() { return oldList.size(); }
+
+        @Override
+        public int getNewListSize() { return newList.size(); }
+
+        @Override
+        public boolean areItemsTheSame(int oldPos, int newPos) {
+            Rule o = oldList.get(oldPos);
+            Rule n = newList.get(newPos);
+            return o.uid == n.uid && o.packageName.equals(n.packageName);
+        }
+
+        @Override
+        public boolean areContentsTheSame(int oldPos, int newPos) {
+            Rule o = oldList.get(oldPos);
+            Rule n = newList.get(newPos);
+            return o.wifi_blocked == n.wifi_blocked &&
+                   o.other_blocked == n.other_blocked &&
+                   o.screen_wifi == n.screen_wifi &&
+                   o.screen_other == n.screen_other &&
+                   o.roaming == n.roaming &&
+                   o.lockdown == n.lockdown &&
+                   o.apply == n.apply &&
+                   o.notify == n.notify &&
+                   o.changed == n.changed &&
+                   o.hosts == n.hosts &&
+                   o.other_temp_allow == n.other_temp_allow &&
+                   o.expanded == n.expanded;
+        }
     }
 }

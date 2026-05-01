@@ -25,8 +25,21 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@id/tvDisabled"
+        android:layoutAnimation="@anim/list_item_fade_in"
         android:scrollbarStyle="insideOverlay"
         android:scrollbars="vertical" />
+
+    <TextView
+        android:id="@android:id/empty"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/tvDisabled"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="48dp"
+        android:gravity="center"
+        android:padding="24dp"
+        android:text="@string/msg_log_empty"
+        android:textAppearance="@style/TextMedium" />
 
     <View
         android:id="@+id/vwPopupAnchor"

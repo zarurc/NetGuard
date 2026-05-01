@@ -140,6 +140,7 @@ public class ActivityLog extends AppCompatActivity implements SharedPreferences.
         });
 
         lvLog.setAdapter(adapter);
+        lvLog.setEmptyView(findViewById(android.R.id.empty));
 
         try {
             vpn4 = InetAddress.getByName(prefs.getString("vpn4", "10.1.10.1"));
@@ -453,14 +454,14 @@ public class ActivityLog extends AppCompatActivity implements SharedPreferences.
                 item.setChecked(!item.isChecked());
                 prefs.edit().putBoolean("resolve", item.isChecked()).apply();
                 adapter.setResolve(item.isChecked());
-                adapter.notifyDataSetChanged();
+                adapter.notifyItemRangeChanged(0, adapter.getItemCount());
                 return true;
 
             case R.id.menu_log_organization:
                 item.setChecked(!item.isChecked());
                 prefs.edit().putBoolean("organization", item.isChecked()).apply();
                 adapter.setOrganization(item.isChecked());
-                adapter.notifyDataSetChanged();
+                adapter.notifyItemRangeChanged(0, adapter.getItemCount());
                 return true;
 
             case R.id.menu_pcap_enabled:

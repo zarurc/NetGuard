@@ -9,6 +9,7 @@
         android:layout_width="32dp"
         android:layout_height="32dp"
         android:layout_gravity="center_vertical"
+        android:importantForAccessibility="no"
         android:src="@drawable/ic_security_white_24dp" />
 
     <ImageView
@@ -18,6 +19,7 @@
         android:layout_gravity="center_vertical"
         android:layout_marginLeft="4dp"
         android:layout_marginRight="4dp"
+        android:contentDescription="@string/cd_pending_rules"
         android:src="@drawable/ic_hourglass_empty_white_24dp"
         android:visibility="gone" />
 
@@ -28,6 +30,7 @@
         android:layout_gravity="center_vertical"
         android:layout_marginLeft="16dp"
         android:layout_marginStart="16dp"
+        android:contentDescription="@string/cd_firewall_toggle"
         android:saveEnabled="false" />
 
     <ImageView
@@ -37,6 +40,7 @@
         android:layout_gravity="center_vertical"
         android:layout_marginLeft="16dp"
         android:layout_marginStart="16dp"
+        android:contentDescription="@string/cd_metered_network"
         android:src="@drawable/ic_attach_money_white_24dp"
         android:visibility="invisible" />
 </LinearLayout>

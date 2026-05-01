@@ -2,8 +2,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="4dp"
-    android:theme="@style/Theme.AppCompat.Light.DarkActionBar">
+    android:padding="4dp">
 
     <LinearLayout
         android:layout_width="wrap_content"
@@ -16,20 +15,18 @@
             android:id="@+id/tvTx"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textAppearance="@style/Base.TextAppearance.AppCompat.Small"
-            android:textColor="@color/colorGrayed"
-            android:typeface="monospace" />
+            android:textAppearance="@style/TextMono"
+            android:textColor="?android:attr/textColorPrimary" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="4dp"
             android:layout_marginLeft="4dp"
-            android:alpha="0.5"
+            android:alpha="0.8"
             android:text="▲"
-            android:textAppearance="@style/Base.TextAppearance.AppCompat.Small"
-            android:textColor="@color/colorSend"
-            android:typeface="monospace" />
+            android:textAppearance="@style/TextSmall"
+            android:textColor="@color/colorSend" />
 
         <TextView
             android:id="@+id/tvRx"
@@ -37,20 +34,18 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="4dp"
             android:layout_marginLeft="4dp"
-            android:textAppearance="@style/Base.TextAppearance.AppCompat.Small"
-            android:textColor="@color/colorGrayed"
-            android:typeface="monospace" />
+            android:textAppearance="@style/TextMono"
+            android:textColor="?android:attr/textColorPrimary" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="4dp"
             android:layout_marginLeft="4dp"
-            android:alpha="0.5"
+            android:alpha="0.8"
             android:text="▼"
-            android:textAppearance="@style/Base.TextAppearance.AppCompat.Small"
-            android:textColor="@color/colorReceive"
-            android:typeface="monospace" />
+            android:textAppearance="@style/TextSmall"
+            android:textColor="@color/colorReceive" />
     </LinearLayout>
 
     <TextView
@@ -60,7 +55,7 @@
         android:layout_alignParentStart="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentTop="true"
-        android:textAppearance="@style/Base.TextAppearance.AppCompat.Small"
+        android:textAppearance="@style/TextSmall"
         android:textColor="@color/colorGrayed"
         android:textSize="10sp" />
 
@@ -72,7 +67,7 @@
         android:layout_alignParentLeft="true"
         android:layout_alignParentBottom="true"
         android:singleLine="false"
-        android:textAppearance="@style/Base.TextAppearance.AppCompat.Small"
+        android:textAppearance="@style/TextSmall"
         android:textColor="@color/colorGrayed"
         android:textSize="10sp" />
 
@@ -83,7 +78,7 @@
         android:layout_alignParentTop="true"
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
-        android:textAppearance="@style/Base.TextAppearance.AppCompat.Small"
+        android:textAppearance="@style/TextSmall"
         android:textColor="@color/colorGrayed"
         android:textSize="10sp" />
 
@@ -103,9 +98,8 @@
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
         android:layout_centerVertical="true"
-        android:paddingTop="10sp"
-        android:textAppearance="@style/Base.TextAppearance.AppCompat.Small"
+        android:paddingTop="10dp"
+        android:textAppearance="@style/TextMono"
         android:textColor="@color/colorGrayed"
-        android:textSize="10sp"
-        android:typeface="monospace" />
+        android:textSize="10sp" />
 </RelativeLayout>

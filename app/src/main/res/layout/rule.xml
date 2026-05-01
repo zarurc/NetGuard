@@ -2,6 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:animateLayoutChanges="true"
     android:orientation="vertical"
     android:paddingTop="8dp"
     android:paddingEnd="4dp"
@@ -26,7 +27,8 @@
                 android:layout_width="32dp"
                 android:layout_height="32dp"
                 android:layout_gravity="center_vertical|center_horizontal"
-                android:alpha="0.5"
+                android:alpha="0.6"
+                android:contentDescription="@string/cd_expand_app"
                 android:src="?attr/expander" />
 
             <ImageView
@@ -54,8 +56,7 @@
             android:layout_gravity="bottom"
             android:layout_marginStart="4dp"
             android:layout_marginLeft="4dp"
-            android:textAppearance="@style/TextSmall"
-            android:textSize="12sp" />
+            android:textAppearance="@style/TextSmall" />
 
         <RelativeLayout
             android:id="@+id/rlLockdown"
@@ -69,6 +70,7 @@
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:layout_centerInParent="true"
+                android:importantForAccessibility="no"
                 android:src="@drawable/lockdown" />
         </RelativeLayout>
 
@@ -78,10 +80,10 @@
             android:orientation="horizontal">
 
             <RelativeLayout
-                android:layout_width="24dp"
-                android:layout_height="?android:attr/listPreferredItemHeightSmall"
-                android:layout_marginStart="8dp"
-                android:layout_marginLeft="8dp">
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_marginStart="4dp"
+                android:layout_marginLeft="4dp">
 
                 <CheckBox
                     android:id="@+id/cbWifi"
@@ -89,7 +91,8 @@
                     android:layout_height="wrap_content"
                     android:layout_centerInParent="true"
                     android:button="@drawable/wifi"
-                    android:contentDescription="@string/title_block_wifi" />
+                    android:contentDescription="@string/title_block_wifi"
+                    android:tooltipText="@string/title_block_wifi" />
             </RelativeLayout>
 
             <LinearLayout
@@ -119,10 +122,10 @@
             android:orientation="horizontal">
 
             <RelativeLayout
-                android:layout_width="24dp"
-                android:layout_height="?android:attr/listPreferredItemHeightSmall"
-                android:layout_marginStart="8dp"
-                android:layout_marginLeft="8dp">
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_marginStart="4dp"
+                android:layout_marginLeft="4dp">
 
                 <CheckBox
                     android:id="@+id/cbOther"
@@ -130,7 +133,8 @@
                     android:layout_height="wrap_content"
                     android:layout_centerInParent="true"
                     android:button="@drawable/other"
-                    android:contentDescription="@string/title_block_other" />
+                    android:contentDescription="@string/title_block_other"
+                    android:tooltipText="@string/title_block_other" />
             </RelativeLayout>
 
             <LinearLayout
@@ -154,8 +158,7 @@
                     android:gravity="center_horizontal"
                     android:text="@string/title_roaming_symbol"
                     android:textAppearance="@style/TextSmall"
-                    android:textColor="?attr/colorOff"
-                    android:textSize="14sp" />
+                    android:textColor="?attr/colorOff" />
             </LinearLayout>
 
             <TextView
@@ -172,6 +175,7 @@
                 android:gravity="center"
                 android:minHeight="44dp"
                 android:minWidth="44dp"
+                android:textAppearance="@style/TextSmall"
                 android:textSize="14sp"
                 android:visibility="gone" />
         </LinearLayout>
@@ -206,6 +210,12 @@
         android:layout_marginTop="8dp"
         android:orientation="vertical"
         android:visibility="gone">
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="?android:attr/listDivider"
+            android:layout_marginBottom="8dp" />
 
         <TextView
             android:id="@+id/tvUid"
@@ -279,6 +289,9 @@
                 android:layout_gravity="center_vertical"
                 android:layout_marginEnd="8dp"
                 android:layout_marginRight="8dp"
+                android:minWidth="48dp"
+                android:minHeight="48dp"
+                android:contentDescription="@string/cd_data_saver"
                 android:src="?attr/iconDatasaver"
                 android:visibility="gone" />
 
@@ -289,6 +302,9 @@
                 android:layout_gravity="center_vertical"
                 android:layout_marginEnd="8dp"
                 android:layout_marginRight="8dp"
+                android:minWidth="48dp"
+                android:minHeight="48dp"
+                android:contentDescription="@string/cd_app_settings"
                 android:src="?attr/iconSettings" />
 
             <ImageButton
@@ -296,6 +312,9 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
+                android:minWidth="48dp"
+                android:minHeight="48dp"
+                android:contentDescription="@string/cd_open_app"
                 android:src="?attr/iconLaunch" />
         </LinearLayout>
 
@@ -370,8 +389,7 @@
                 android:gravity="center_horizontal"
                 android:text="@string/title_roaming_symbol"
                 android:textAppearance="@style/TextSmall"
-                android:textColor="?attr/colorOff"
-                android:textSize="14sp" />
+                android:textColor="?attr/colorOff" />
 
             <CheckBox
                 android:id="@+id/cbRoaming"
@@ -402,12 +420,16 @@
                 android:textAppearance="@style/TextSmall" />
         </LinearLayout>
 
-        <ImageButton
+        <Button
             android:id="@+id/btnClear"
+            style="?android:attr/buttonStyleSmall"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:src="?attr/iconDelete" />
+            android:layout_marginTop="8dp"
+            android:contentDescription="@string/cd_clear_rules"
+            android:drawableEnd="?attr/iconDelete"
+            android:drawablePadding="4dp"
+            android:text="@string/cd_clear_rules" />
 
         <LinearLayout
             android:id="@+id/llFilter"
@@ -436,6 +458,7 @@
                     android:layout_gravity="center_vertical"
                     android:layout_marginEnd="8dp"
                     android:layout_marginRight="8dp"
+                    android:contentDescription="@string/cd_live_updates"
                     android:src="?attr/iconPause" />
             </LinearLayout>
 
@@ -480,13 +503,17 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp" />
 
-            <ImageButton
+            <Button
                 android:id="@+id/btnClearAccess"
+                style="?android:attr/buttonStyleSmall"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
                 android:layout_marginTop="4dp"
-                android:src="?attr/iconDelete" />
+                android:contentDescription="@string/cd_clear_access_log"
+                android:drawableEnd="?attr/iconDelete"
+                android:drawablePadding="4dp"
+                android:text="@string/cd_clear_access_log" />
 
             <TextView
                 android:layout_width="wrap_content"

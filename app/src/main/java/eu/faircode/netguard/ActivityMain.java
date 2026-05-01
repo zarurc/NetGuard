@@ -313,8 +313,10 @@ public class ActivityMain extends AppCompatActivity implements SharedPreferences
         TypedValue tv = new TypedValue();
         getTheme().resolveAttribute(R.attr.colorPrimary, tv, true);
         swipeRefresh = findViewById(R.id.swipeRefresh);
-        swipeRefresh.setColorSchemeColors(Color.WHITE, Color.WHITE, Color.WHITE);
-        swipeRefresh.setProgressBackgroundColorSchemeColor(tv.data);
+        swipeRefresh.setColorSchemeColors(tv.data);
+        TypedValue tvBg = new TypedValue();
+        getTheme().resolveAttribute(android.R.attr.colorBackground, tvBg, true);
+        swipeRefresh.setProgressBackgroundColorSchemeColor(tvBg.data);
         swipeRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
@@ -452,7 +454,7 @@ public class ActivityMain extends AppCompatActivity implements SharedPreferences
 
         DatabaseHelper.getInstance(this).addAccessChangedListener(accessChangedListener);
         if (adapter != null)
-            adapter.notifyDataSetChanged();
+            adapter.notifyItemRangeChanged(0, adapter.getItemCount());
 
         PackageManager pm = getPackageManager();
         boolean canNotify =
@@ -650,7 +652,7 @@ public class ActivityMain extends AppCompatActivity implements SharedPreferences
                 @Override
                 public void run() {
                     if (adapter != null && adapter.isLive())
-                        adapter.notifyDataSetChanged();
+                        adapter.notifyItemRangeChanged(0, adapter.getItemCount());
                 }
             });
         }

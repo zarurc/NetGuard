@@ -36,6 +36,7 @@ import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.OnApplyWindowInsetsListener;
 import androidx.core.view.ViewCompat;
@@ -89,7 +90,9 @@ public class ApplicationEx extends Application {
                             boolean dark = prefs.getBoolean("dark_theme", false);
 
                             activity.getWindow().getDecorView().setBackgroundColor(tv.data);
-                            content.setBackgroundColor(dark ? Color.parseColor("#ff121212") : Color.WHITE);
+                            content.setBackgroundColor(dark
+                                    ? ContextCompat.getColor(activity, R.color.color_background_dark)
+                                    : ContextCompat.getColor(activity, R.color.color_background_light));
 
                             int actionBarHeight = Util.dips2pixels(56, activity);
                             View decor = activity.getWindow().getDecorView();
