@@ -93,8 +93,6 @@ public class ActivityMain extends AppCompatActivity implements SharedPreferences
     private AlertDialog dialogVpn = null;
     private AlertDialog dialogDoze = null;
     private AlertDialog dialogLegend = null;
-    private AlertDialog dialogAbout = null;
-
     private IAB iab = null;
 
     private static final int REQUEST_VPN = 1;
@@ -165,14 +163,6 @@ public class ActivityMain extends AppCompatActivity implements SharedPreferences
         ivMetered = actionView.findViewById(R.id.ivMetered);
 
         // Icon
-        ivIcon.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View view) {
-                menu_about();
-                return true;
-            }
-        });
-
         // Title
         getSupportActionBar().setTitle(null);
 
@@ -459,21 +449,6 @@ public class ActivityMain extends AppCompatActivity implements SharedPreferences
             Log.e(TAG, ex.toString() + "\n" + Log.getStackTraceString(ex));
         }
 
-        // Support
-        LinearLayout llSupport = findViewById(R.id.llSupport);
-        TextView tvSupport = findViewById(R.id.tvSupport);
-
-        SpannableString content = new SpannableString(getString(R.string.app_support));
-        content.setSpan(new UnderlineSpan(), 0, content.length(), 0);
-        tvSupport.setText(content);
-
-        llSupport.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                startActivity(getIntentPro(ActivityMain.this));
-            }
-        });
-
         // Handle intent
         checkExtras(getIntent());
     }
@@ -512,11 +487,6 @@ public class ActivityMain extends AppCompatActivity implements SharedPreferences
             adapter.notifyDataSetChanged();
 
         PackageManager pm = getPackageManager();
-        LinearLayout llSupport = findViewById(R.id.llSupport);
-        llSupport.setVisibility(
-                IAB.isPurchasedAny(this) || getIntentPro(this).resolveActivity(pm) == null
-                        ? View.GONE : View.VISIBLE);
-
         boolean canNotify =
                 (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
                         (ContextCompat.checkSelfPermission(this,
@@ -600,10 +570,7 @@ public class ActivityMain extends AppCompatActivity implements SharedPreferences
             dialogLegend.dismiss();
             dialogLegend = null;
         }
-        if (dialogAbout != null) {
-            dialogAbout.dismiss();
-            dialogAbout = null;
-        }
+
 
         if (iab != null) {
             iab.unbind();
@@ -832,29 +799,7 @@ public class ActivityMain extends AppCompatActivity implements SharedPreferences
             searchView.setQuery(search, true);
         }
 
-        markPro(menu.findItem(R.id.menu_log), ActivityPro.SKU_LOG);
-        if (!IAB.isPurchasedAny(this))
-            markPro(menu.findItem(R.id.menu_pro), null);
-
-        if (!Util.hasValidFingerprint(this) || getIntentInvite(this).resolveActivity(pm) == null)
-            menu.removeItem(R.id.menu_invite);
-
-        if (getIntentSupport().resolveActivity(getPackageManager()) == null)
-            menu.removeItem(R.id.menu_support);
-
-        menu.findItem(R.id.menu_apps).setEnabled(getIntentApps(this).resolveActivity(pm) != null);
-
         return true;
-    }
-
-    private void markPro(MenuItem menu, String sku) {
-        if (sku == null || !IAB.isPurchased(sku, this)) {
-            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-            boolean dark = prefs.getBoolean("dark_theme", false);
-            SpannableStringBuilder ssb = new SpannableStringBuilder("  " + menu.getTitle());
-            ssb.setSpan(new ImageSpan(this, dark ? R.drawable.ic_shopping_cart_white_24dp : R.drawable.ic_shopping_cart_black_24dp), 0, 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-            menu.setTitle(ssb);
-        }
     }
 
     @Override
@@ -946,28 +891,8 @@ public class ActivityMain extends AppCompatActivity implements SharedPreferences
                 startActivity(new Intent(this, ActivitySettings.class));
                 return true;
 
-            case R.id.menu_pro:
-                startActivity(new Intent(ActivityMain.this, ActivityPro.class));
-                return true;
-
-            case R.id.menu_invite:
-                startActivityForResult(getIntentInvite(this), REQUEST_INVITE);
-                return true;
-
             case R.id.menu_legend:
                 menu_legend();
-                return true;
-
-            case R.id.menu_support:
-                startActivity(getIntentSupport());
-                return true;
-
-            case R.id.menu_about:
-                menu_about();
-                return true;
-
-            case R.id.menu_apps:
-                menu_apps();
                 return true;
 
             default:
@@ -1263,85 +1188,4 @@ public class ActivityMain extends AppCompatActivity implements SharedPreferences
         }
     }
 
-    private void menu_about() {
-        // Create view
-        LayoutInflater inflater = LayoutInflater.from(this);
-        View view = inflater.inflate(R.layout.about, null, false);
-        TextView tvVersionName = view.findViewById(R.id.tvVersionName);
-        TextView tvVersionCode = view.findViewById(R.id.tvVersionCode);
-        Button btnRate = view.findViewById(R.id.btnRate);
-        TextView tvEula = view.findViewById(R.id.tvEula);
-        TextView tvPrivacy = view.findViewById(R.id.tvPrivacy);
-
-        // Show version
-        tvVersionName.setText(Util.getSelfVersionName(this));
-        if (!Util.hasValidFingerprint(this))
-            tvVersionName.setTextColor(Color.GRAY);
-        tvVersionCode.setText(Integer.toString(Util.getSelfVersionCode(this)));
-
-        // Handle license
-        tvEula.setMovementMethod(LinkMovementMethod.getInstance());
-        tvPrivacy.setMovementMethod(LinkMovementMethod.getInstance());
-
-        // Handle rate
-        btnRate.setVisibility(getIntentRate(this).resolveActivity(getPackageManager()) == null ? View.GONE : View.VISIBLE);
-        btnRate.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                startActivity(getIntentRate(ActivityMain.this));
-            }
-        });
-
-        // Show dialog
-        dialogAbout = new AlertDialog.Builder(this)
-                .setView(view)
-                .setCancelable(true)
-                .setOnDismissListener(new DialogInterface.OnDismissListener() {
-                    @Override
-                    public void onDismiss(DialogInterface dialogInterface) {
-                        dialogAbout = null;
-                    }
-                })
-                .create();
-        dialogAbout.show();
-    }
-
-    private void menu_apps() {
-        startActivity(getIntentApps(this));
-    }
-
-    private static Intent getIntentPro(Context context) {
-        if (Util.isPlayStoreInstall(context))
-            return new Intent(context, ActivityPro.class);
-        else {
-            Intent intent = new Intent(Intent.ACTION_VIEW);
-            intent.setData(Uri.parse("https://contact.faircode.eu/?product=netguardstandalone"));
-            return intent;
-        }
-    }
-
-    private static Intent getIntentInvite(Context context) {
-        Intent intent = new Intent(Intent.ACTION_SEND);
-        intent.setType("text/plain");
-        intent.putExtra(Intent.EXTRA_SUBJECT, context.getString(R.string.app_name));
-        intent.putExtra(Intent.EXTRA_TEXT, context.getString(R.string.msg_try) + "\n\nhttps://www.netguard.me/\n\n");
-        return intent;
-    }
-
-    private static Intent getIntentApps(Context context) {
-        return new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/dev?id=8420080860664580239"));
-    }
-
-    private static Intent getIntentRate(Context context) {
-        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + context.getPackageName()));
-        if (intent.resolveActivity(context.getPackageManager()) == null)
-            intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=" + context.getPackageName()));
-        return intent;
-    }
-
-    private static Intent getIntentSupport() {
-        Intent intent = new Intent(Intent.ACTION_VIEW);
-        intent.setData(Uri.parse("https://github.com/M66B/NetGuard/blob/master/FAQ.md"));
-        return intent;
-    }
 }
