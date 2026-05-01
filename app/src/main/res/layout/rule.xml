@@ -80,16 +80,18 @@
             android:orientation="horizontal">
 
             <RelativeLayout
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:layout_marginStart="4dp"
-                android:layout_marginLeft="4dp">
+                android:layout_width="24dp"
+                android:layout_height="?android:attr/listPreferredItemHeightSmall"
+                android:layout_marginStart="8dp"
+                android:layout_marginLeft="8dp">
 
                 <CheckBox
                     android:id="@+id/cbWifi"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_centerInParent="true"
+                    android:minWidth="48dp"
+                    android:minHeight="48dp"
                     android:button="@drawable/wifi"
                     android:contentDescription="@string/title_block_wifi"
                     android:tooltipText="@string/title_block_wifi" />
@@ -122,16 +124,18 @@
             android:orientation="horizontal">
 
             <RelativeLayout
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:layout_marginStart="4dp"
-                android:layout_marginLeft="4dp">
+                android:layout_width="24dp"
+                android:layout_height="?android:attr/listPreferredItemHeightSmall"
+                android:layout_marginStart="8dp"
+                android:layout_marginLeft="8dp">
 
                 <CheckBox
                     android:id="@+id/cbOther"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_centerInParent="true"
+                    android:minWidth="48dp"
+                    android:minHeight="48dp"
                     android:button="@drawable/other"
                     android:contentDescription="@string/title_block_other"
                     android:tooltipText="@string/title_block_other" />
