@@ -454,14 +454,14 @@ public class ActivityLog extends AppCompatActivity implements SharedPreferences.
                 item.setChecked(!item.isChecked());
                 prefs.edit().putBoolean("resolve", item.isChecked()).apply();
                 adapter.setResolve(item.isChecked());
-                adapter.notifyItemRangeChanged(0, adapter.getItemCount());
+                adapter.notifyDataSetChanged();
                 return true;
 
             case R.id.menu_log_organization:
                 item.setChecked(!item.isChecked());
                 prefs.edit().putBoolean("organization", item.isChecked()).apply();
                 adapter.setOrganization(item.isChecked());
-                adapter.notifyItemRangeChanged(0, adapter.getItemCount());
+                adapter.notifyDataSetChanged();
                 return true;
 
             case R.id.menu_pcap_enabled:
